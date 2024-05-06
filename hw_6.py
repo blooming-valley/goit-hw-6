@@ -16,7 +16,7 @@ class Phone(Field):
     # Поле для зберігання номера телефону.(вал 10 цифр)
     def __init__(self, value):
         super().__init__(value)
-        if len(str(self.value)) != 10:
+        if len(self.value) != 10 or not self.value.isdigit():
             raise ValueError("The number must be 10 digits long")
         
 class Record:
@@ -37,18 +37,20 @@ class Record:
                 raise ValueError(f"'{phone}' not found")
   
     def edit_phone(self, old_phone, new_phone):
+        found = False  # Прапорець для відстеження того, чи знайдено номер
         for p in self.phones:
             if p.value == old_phone:
-                p.value = new_phone 
-            else:
-                raise ValueError(f"'{old_phone}' not found")
-
+                p.value = new_phone
+                found = True
+                break  # Зупинка циклу, якщо номер знайдено та змінено
+        if not found:
+            raise ValueError(f"'{old_phone}' not found")
+    
     def find_phone(self, phone):
         for p in self.phones:
             if p.value == phone:
                 return p
-            else:
-                raise ValueError(f"'{phone}' not found")
+        return None
   
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
@@ -59,14 +61,9 @@ class AddressBook(UserDict):
     def add_record(self,name):
         self.data[name] = Record(name)
         
-    def find_record(self, name):
-        if name in self.data:
-            return self.data[name]
-        else:
-            raise ValueError(f"'{name}' not found")
+    def find(self, name):
+        return self.data.get(name)
     
-    def delete_record(self, name):
-        if name in self.data:
-            del self.data[name]
-        else:
-            raise ValueError(f"'{name}' not found")
+    def delete(self, name):
+        del self.data[name]
+
